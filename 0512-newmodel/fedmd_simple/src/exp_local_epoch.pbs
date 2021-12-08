@@ -1,0 +1,105 @@
+##!/bin/sh
+#PBS -N ours_with
+#PBS -l nodes=1:ppn=1 -W x=GRES:gpu@1
+#PBS -l walltime=36:00:00
+#PBS -q qgpu01
+#PBS -V
+#PBS -S /bin/bash
+
+module load anaconda3-5.2.0
+module load cuda-9.0
+module load openmpi-3.0.1-gcc-5.5.0
+#source activate py_gpu2
+#conda install pandas
+#################################################################
+NP=`cat $PBS_NODEFILE | wc -l`
+NN=`cat $PBS_NODEFILE | sort | uniq | tee /tmp/nodes.$$ | wc -l`
+cat $PBS_NODEFILE > /tmp/nodefile.$$
+echo "process will start at : "
+date
+echo "++++++++++++++++++++++++++++++++++++++++"
+cd $PBS_O_WORKDIR
+
+nvidia-smi > nv.out
+
+##local epoch###
+#mpirun -n $NP python FedMD_with.py --conf ../conf/EMNIST_imbalance_20models_T10_20local.json --gpu=1 > fmnist_ours_with_20models_4labels_20local_T10.out
+mpirun -n $NP python FedMD_with.py --conf ../conf/EMNIST_imbalance_20models_T10_15local.json --gpu=1 > fmnist_ours_with_20models_4labels_15local_T10.out
+mpirun -n $NP python FedMD_with.py --conf ../conf/EMNIST_imbalance_20models_T10_10local.json --gpu=1 > fmnist_ours_with_20models_4labels_10local_T10.out
+#mpirun -n $NP python FedMD_with.py --conf ../conf/EMNIST_imbalance_20models_T10_5local.json --gpu=1 > fmnist_ours_with_20models_4labels_5local_T10.out
+
+####20models#####
+
+#mpirun -n $NP python FedMD_main.py --conf ../conf/EMNIST_imbalance_20models.json --gpu=1 > fmnist_normal_20models_4labels_15local.out
+
+#mpirun -n $NP python FedMD_cos.py --conf ../conf/EMNIST_imbalance_20models.json --gpu=1 > fmnist_cos_20models_4labels_15local.out
+
+#mpirun -n $NP python FedMD_topk.py --conf ../conf/EMNIST_imbalance_20models.json --gpu=1 > fmnist_topk0.5_20models_4labels_15local.out
+
+##
+#mpirun -n $NP python FedMD_with.py --conf ../conf/EMNIST_imbalance_20models_T10.json --gpu=1 > fmnist_ours_with_20models_4labels_15local_T10.out
+#mpirun -n $NP python FedMD_with.py --conf ../conf/EMNIST_imbalance_20models_T5.json --gpu=1 > fmnist_ours_with_20models_4labels_15local_T5.out
+#mpirun -n $NP python FedMD_with.py --conf ../conf/EMNIST_imbalance_20models_T1.json --gpu=1 > fmnist_ours_with_20models_4labels_15local_T1.out
+
+##
+#mpirun -n $NP python FedMD_without.py --conf ../conf/EMNIST_imbalance_20models_T10.json --gpu=1 > fmnist_ours_without_20models_4labels_15local_T10.out
+#mpirun -n $NP python FedMD_without.py --conf ../conf/EMNIST_imbalance_20models_T5.json --gpu=1 > fmnist_ours_without_20models_4labels_15local_T5.out
+#mpirun -n $NP python FedMD_without.py --conf ../conf/EMNIST_imbalance_20models_T1.json --gpu=1 > fmnist_ours_without_20models_4labels_15local_T1.out
+
+
+
+
+
+###emnist
+#mpirun -n $NP python FedMD_with.py --conf ../conf/EMNIST_imbalance_lenetalexnet_T1.json --gpu=1 > emnist_ours_with_newmodel_T1.out
+
+#mpirun -n $NP python FedMD_with.py --conf ../conf/EMNIST_imbalance_lenetalexnet_T5.json --gpu=1 > emnist_ours_with_newmodel_T5.out
+
+#mpirun -n $NP python FedMD_with.py --conf ../conf/EMNIST_imbalance_lenetalexnet_T10.json --gpu=1 > emnist_ours_with_newmodel_T10.out
+
+
+#mpirun -n $NP python FedMD_without.py --conf ../conf/EMNIST_imbalance_lenetalexnet_T1.json --gpu=1 > emnist_ours_without_newmodel_T1.out
+
+#mpirun -n $NP python FedMD_without.py --conf ../conf/EMNIST_imbalance_lenetalexnet_T5.json --gpu=1 > emnist_ours_without_newmodel_T5.out
+
+#mpirun -n $NP python FedMD_without.py --conf ../conf/EMNIST_imbalance_lenetalexnet_T10.json --gpu=1 > emnist_ours_without_newmodel_T10.out
+########################################################
+
+#mpirun -n $NP python FedMD_main.py --conf ../conf/EMNIST_imbalance_lenetalexnet.json --gpu=1 > emnist_normal_newmodel3.out
+
+#mpirun -n $NP python FedMD_topk.py --conf ../conf/EMNIST_imbalance_lenetalexnet.json --gpu=1 > emnist_topk0.5_newmodel.out
+
+#mpirun -n $NP python FedMD_cos.py --conf ../conf/EMNIST_imbalance_lenetalexnet.json --gpu=1 > emnist_cos_newmodel3.out
+
+
+
+#mpirun -n $NP python FedMD_without_adam.py --conf ../conf/EMNIST_imbalance_lenetalexnet.json --gpu=1 > emnist_ours_without_adam_localepoch_softmax1.out
+
+
+
+###fmnist
+#mpirun -n $NP python FedMD_main_learnweight.py --conf ../conf/EMNIST_imbalance_newconf.json --gpu=1 > 10labels-2_ours_with1.out
+
+#mpirun -n $NP python FedMD_without.py --conf ../conf/EMNIST_imbalance_newconf.json --gpu=1 > 10labels-2_ours_withoutsgd1.out
+
+########################################################
+
+#mpirun -n $NP python FedMD_without_adam.py --conf ../conf/EMNIST_imbalance_newconf.json --gpu=1 > 10labels-2_ours_without_adam_test1.out
+
+#mpirun -n $NP python FedMD_main.py --conf ../conf/EMNIST_imbalance_newconf.json --gpu=1 > 10labels-2_normal_20round.out
+
+#mpirun -n $NP python FedMD_topk.py --conf ../conf/EMNIST_imbalance_newconf.json --gpu=1 > 10labels-2_topk0.5_1.out
+
+#mpirun -n $NP python FedMD_cos.py --conf ../conf/EMNIST_imbalance_newconf.json --gpu=1 > 10labels-2_cos_1.out
+
+
+
+
+echo "++++++++++++++++++++++++++++++++++++++++"
+echo "process end at : "
+date
+rm -f /tmp/nodefile.$$
+rm -f /tmp/nodes.$$
+
+module unload openmpi-3.0.1-gcc-5.5.0
+module unload cuda-9.0
