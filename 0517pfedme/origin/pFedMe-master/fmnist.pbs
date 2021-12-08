@@ -1,0 +1,54 @@
+##!/bin/sh
+#PBS -N new_fmnist
+#PBS -l nodes=1:ppn=1 -W x=GRES:gpu@1
+#PBS -l walltime=36:00:00
+#PBS -q qgpu01
+#PBS -V
+#PBS -S /bin/bash
+
+module load anaconda3-5.2.0
+module load cuda-9.0
+module load openmpi-3.0.1-gcc-5.5.0
+#source activate py_gpu2
+#conda install pandas
+#################################################################
+NP=`cat $PBS_NODEFILE | wc -l`
+NN=`cat $PBS_NODEFILE | sort | uniq | tee /tmp/nodes.$$ | wc -l`
+cat $PBS_NODEFILE > /tmp/nodefile.$$
+echo "process will start at : "
+date
+echo "++++++++++++++++++++++++++++++++++++++++"
+cd $PBS_O_WORKDIR
+
+nvidia-smi > nv.out
+
+#0522 fmnist#
+#python3 main.py --dataset Cifar10 --model cnn --batch_size 20 --learning_rate 0.01 --personal_learning_rate 0.01 --beta 1 --lamda 15 --num_global_iters 800 --local_epochs 20 --algorithm pFedMe --numusers 5 
+
+#mpirun -n $NP python main.py --dataset=Mnist --model=cnn --batch_size=20 --learning_rate=0.005 --personal_learning_rate=0.01 --beta=1 --lamda=15 --num_global_iters=800 --local_epochs=20 --algorithm=pFedMe --numusers=5 --times=1 --gpu=0 > fmnist_pfedme_lr0.005_cnn_numusers5.out
+
+#mpirun -n $NP python main.py --dataset=Mnist --model=cnn --batch_size=20 --learning_rate=0.005 --personal_learning_rate=0.01 --beta=0.001 --lamda=15 --num_global_iters=800 --local_epochs=20 --algorithm=PerAvg --numusers=5 --times=1 --gpu=0 > fmnist_peravg_lr0.005_cnn_numusers5.out
+
+mpirun -n $NP python main.py --dataset=Mnist --model=cnn --batch_size=20 --learning_rate=0.003 --personal_learning_rate=0.01 --beta=1 --lamda=15 --num_global_iters=800 --local_epochs=20 --algorithm=FedAvg --numusers=5 --times=1 --gpu=0 > fmnist_fedavg_lr0.003_cnn_numusers5.out
+
+#mpirun -n $NP python main.py --dataset=Mnist --model=cnn --batch_size=20 --learning_rate=0.02 --personal_learning_rate=0.01 --beta=1 --lamda=15 --num_global_iters=800 --local_epochs=20 --algorithm=FedAvg --numusers=5 --times=1 --gpu=0 > fmnist_fedavg_lr0.02_cnn_numusers5.out
+
+
+###EMNIST
+#mpirun -n $NP python main.py --dataset=EMnist --model=cnn --batch_size=16 --learning_rate=0.01 --beta=0.001  --num_global_iters=500 --local_epochs=20 --algorithm=PerAvg --numusers=10  --times 1 --gpu=0 > emnist_PerAvg_cnn.out
+
+#mpirun -n $NP python main.py --dataset=EMnist --model=cnn --batch_size=16 --learning_rate=0.01 --num_global_iters=500 --local_epochs=20 --algorithm=FedAvg --numusers=10  --times=1 --gpu=0 > emnist_FedAvg_cnn.out
+
+#mpirun -n $NP python main.py --dataset=EMnist --model=cnn --batch_size=16 --learning_rate=0.01 --personal_learning_rate=0.01 --beta=1 --lamda=15 --num_global_iters=500 --local_epochs=20 --algorithm=pFedMe --numusers=10 --times=1 --gpu=0 > emnist_pfedme_cnn.out
+
+
+
+
+echo "++++++++++++++++++++++++++++++++++++++++"
+echo "process end at : "
+date
+rm -f /tmp/nodefile.$$
+rm -f /tmp/nodes.$$
+
+module unload openmpi-3.0.1-gcc-5.5.0
+module unload cuda-9.0
